@@ -1,0 +1,40 @@
+﻿<?xml version="1.0" encoding="utf-8" ?>
+<configuration xmlns:xdt="http://schemas.microsoft.com/XML-Document-Transform">
+  <system.serviceModel xdt:Transform="InsertIfMissing">
+    <extensions xdt:Transform="InsertIfMissing">
+      <behaviorExtensions xdt:Transform="InsertIfMissing">
+        <!-- OlsaAuthentication - Extension to support SOAP UserNameToken PasswordDigest mode -->
+        <!-- OlsaNameSpaceFixUp - Extension to support fixing NameSpaces to resolve AXIS2 and WCF incompatability -->
+        <add name="OlsaAuthentication" type="Olsa.WCF.Extensions.AuthenticationElement, Olsa, Culture=neutral" xdt:Transform="InsertIfMissing" xdt:Locator="Match(name)"/>
+        <add name="OlsaNameSpaceFixUp" type="Olsa.WCF.Extensions.NameSpaceFixUpElement, Olsa, Culture=neutral" xdt:Transform="InsertIfMissing" xdt:Locator="Match(name)"/>
+      </behaviorExtensions>
+    </extensions>
+    <bindings xdt:Transform="InsertIfMissing">
+      <customBinding xdt:Transform="InsertIfMissing">
+        <binding name="OlsaHTTPS" receiveTimeout="00:10:00" sendTimeout="00:10:00" xdt:Transform="InsertIfMissing" xdt:Locator="Match(name)">
+          <!-- Binding for use with HTTPS Olsa EndPoints -->
+          <textMessageEncoding messageVersion="Soap11" writeEncoding="utf-8"  xdt:Transform="InsertIfMissing"/>
+          <httpsTransport maxBufferPoolSize="1048576"  maxReceivedMessageSize="1048576" maxBufferSize="1048576" xdt:Transform="InsertIfMissing"/>
+        </binding>
+      </customBinding>
+    </bindings>
+    <behaviors xdt:Transform="InsertIfMissing">
+      <endpointBehaviors xdt:Transform="InsertIfMissing">
+        <behavior name="OlsaAUTH_AND_NAMESPACE" xdt:Transform="InsertIfMissing" xdt:Locator="Match(name)" >
+          <OlsaAuthentication customerid="YOURCUSTOMERID" sharedsecret="YOURSHAREDSECRET" xdt:Transform="InsertIfMissing">
+            <!-- Behaviour to support SOAP UserNameToken Password Digest -->
+          </OlsaAuthentication>
+          <OlsaNameSpaceFixUp xdt:Transform="InsertIfMissing">
+            <!-- Behaviour to support fix of Namespaces to address AXIS2 / VWCF incompatability -->
+          </OlsaNameSpaceFixUp>
+        </behavior>
+      </endpointBehaviors>
+    </behaviors>
+    <client xdt:Transform="InsertIfMissing">
+      <endpoint address="YOUROLSASERVER/olsa/services/Olsa" binding="customBinding" bindingConfiguration="OlsaHTTPS" behaviorConfiguration="OlsaAUTH_AND_NAMESPACE"
+                contract="Olsa.OlsaPortType" name="Olsa"   xdt:Transform="InsertIfMissing">
+        <!-- If using UD_SubmitReport be sure to switch behaviorConfiguration to OlsaAUTH_AND_NAMESPACE -->
+      </endpoint>
+    </client>
+  </system.serviceModel>
+</configuration>

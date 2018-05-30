@@ -1,0 +1,29 @@
+﻿<?xml version="1.0" encoding="utf-8" ?>
+<package >
+  <metadata minClientVersion="2.6">
+    <id>Skillport.$id$</id>
+    <version>$version$</version>
+    <title>Skillsoft OLSA Libraries for Skillport</title>
+    <authors>$author$</authors>
+    <owners>$author$</owners>
+    <requireLicenseAcceptance>false</requireLicenseAcceptance>
+    <summary>Installs the libraries for using Skillsoft Open Learning Services Architecture (OLSA) Web Service Functions</summary>
+    <description>Installs the libraries for using Skillsoft Open Learning Services Architecture (OLSA) Web Service Functions</description>
+    <releaseNotes>
+      Skillsoft enforce TLS 1.2 for HTTPS connections.
+      Ensure you have followed Microsoft Guidance on enabling this:
+      <![CDATA[https://docs.microsoft.com/en-us/dotnet/framework/network-programming/tls]]>
+    </releaseNotes>
+    <copyright>Copyright 2018</copyright>
+    <tags>Skillport Skillsoft OLSA WCF</tags>
+    <projectUrl>https://github.com/martinholden-skillsoft/Skillport.Olsa</projectUrl>
+    <frameworkAssemblies>
+      <frameworkAssembly assemblyName="System.ServiceModel" targetFramework="net40"/>
+    </frameworkAssemblies>
+  </metadata>
+  <files>
+    <file src="bin\$configuration$\*.XmlSerializers.*" target="lib\net40" />
+    <file src="content\*.*" target="content\net40" />
+    <file src="packagereadme.txt" target="readme.txt" />
+  </files>
+</package>
