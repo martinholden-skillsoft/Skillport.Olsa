@@ -165,60 +165,66 @@ Web.config example:
 ===============================================================================
 Configuring an OLSA Proxy Stub via code.
 -------------------------------------------------------------------------------
+== Example configuring OLSA inline, instead of via config file ==
+This example class implements a static OlsaHelpers class, with a function to get the OlsaPortTypeClient
 
-Example Suggestions, assuming references to OLSA.WCF.dll and the OLSA.dll
-libraries added.
-
-1. Create a function to return an OLSA Binding Configuration.
-This accepts a bool that indicates whether to use HTTPS (true)
-or HTTP (false) transport. 
-
-private static Binding GetOLSAWCFBinding(bool secure)
-{
-    //Set the encoding to SOAP 1.1, Disable Addressing and set encoding to UTF8
-    TextMessageEncodingBindingElement me = new TextMessageEncodingBindingElement();
-    me.MessageVersion = MessageVersion.CreateVersion(EnvelopeVersion.Soap11, AddressingVersion.None);
-    me.WriteEncoding = Encoding.UTF8;
-
-    if (secure)
-    {
-        HttpsTransportBindingElement myBindingElement = new HttpsTransportBindingElement();
-        //Set the maximum received messages sizes to 1Mb
-        myBindingElement.MaxReceivedMessageSize = 1024 * 1024;
-        myBindingElement.MaxBufferPoolSize = 1024 * 1024;
-        return new CustomBinding(me, myBindingElement);
-    }
-    else
-    {
-        // NOTE: we use a non-secure transport here, which means the message will be visible to others.
-        HttpTransportBindingElement myBindingElement = new HttpTransportBindingElement();
-        //Set the maximum received messages sizes to 1Mb
-        myBindingElement.MaxReceivedMessageSize = 1024 * 1024;
-        myBindingElement.MaxBufferPoolSize = 1024 * 1024;
-        return new CustomBinding(me, myBindingElement);
-    }
-}
-
-2. Create the OLSA service proxy.
-This accepts the Endpoint URL, CustomerID and Password
-
-private static OlsaPortTypeClient _OlsaService = null;
-public static OlsaPortTypeClient OlsaService(string EndPoint, string CustomerID, string Password)
-{
-        if (_OlsaService == null)
+        namespace Examples
         {
-            //Create the OLSA Service
-            EndpointAddress serviceAddress = new EndpointAddress(EndPoint);
-            Binding customBinding = GetOLSAWCFBinding(EndPoint.StartsWith("https", StringComparison.InvariantCultureIgnoreCase));
-            OlsaPortTypeClient service = new OlsaPortTypeClient(customBinding, serviceAddress);
-            AuthenticationBehavior behavior1 = new AuthenticationBehavior(CustomerID, Password);
-			NameSpaceFixUpBehavior behavior2 = new NameSpaceFixUpBehavior();
-            service.Endpoint.Behaviors.Add(behavior1);
-			service.Endpoint.Behaviors.Add(behavior2);
-            _OlsaService = service;
+            using System;
+            using System.Text;
+            using System.ServiceModel;
+            using System.ServiceModel.Channels;
+            using Olsa;
+            using Olsa.WCF.Extensions;
+
+            public static class OlsaHelpers
+            {
+                /// <summary>
+                /// Gets the olsa client
+                /// </summary>
+                /// <param name="olsaServerEndpoint">The olsa server endpoint.</param>
+                /// <param name="olsaCustomerId">The olsa customer identifier.</param>
+                /// <param name="olsaSharedSecret">The olsa shared secret.</param>
+                /// <returns></returns>
+                public static OlsaPortTypeClient GetOLSAClient(Uri olsaServerEndpoint, string olsaCustomerId, string olsaSharedSecret)
+                {
+                    //Set the encoding to SOAP 1.1, Disable Addressing and set encoding to UTF8
+                    TextMessageEncodingBindingElement messageEncoding = new TextMessageEncodingBindingElement();
+                    messageEncoding.MessageVersion = MessageVersion.CreateVersion(EnvelopeVersion.Soap11, AddressingVersion.None);
+                    messageEncoding.WriteEncoding = Encoding.UTF8;
+
+                    //Setup Binding Elemment
+                    HttpTransportBindingElement transportBinding = new HttpsTransportBindingElement();
+
+                    //Set the maximum received messages sizes to 1Mb
+                    transportBinding.MaxReceivedMessageSize = 1024 * 1024;
+                    transportBinding.MaxBufferPoolSize = 1024 * 1024;
+
+                    //Create the CustomBinding
+                    Binding customBinding = new CustomBinding(messageEncoding, transportBinding);
+
+                    //Create the OLSA Service
+                    EndpointAddress serviceAddress = new EndpointAddress(olsaServerEndpoint);
+
+                    //Set the endPoint URL YOUROLSASERVER/olsa/services/Olsa has to be HTTPS
+                    OlsaPortTypeClient service = new OlsaPortTypeClient(customBinding, serviceAddress);
+
+                    //Add Behaviour to support SOAP UserNameToken Password Digest
+                    AuthenticationBehavior behavior1 = new AuthenticationBehavior(olsaCustomerId, olsaSharedSecret);
+                    service.Endpoint.Behaviors.Add(behavior1);
+
+                    //Add Behaviour to support fix of Namespaces to address AXIS2 / VWCF incompatability
+                    NameSpaceFixUpBehavior behavior2 = new NameSpaceFixUpBehavior();
+                    service.Endpoint.Behaviors.Add(behavior2);
+
+                    return service;
+                }
+            }
         }
-        return _OlsaService;
-}
+
+== Example Project to use OLSA Function ==
+A sample project showing how to use the packaged to call the OLSA Web Services to generate and download a report.
+https://github.com/martinholden-skillsoft/SkillsoftReportConsole
 
 ===============================================================================
 
